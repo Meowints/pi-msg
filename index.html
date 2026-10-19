@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PI Message Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px;
+            font-size: 34px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 21px;
+        }
+
+        .upload-area {
+            border: 2px dashed #b8c0c8;
+            border-radius: 12px;
+            padding: 45px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #333;
+            background: #fafafa;
+        }
+
+        .upload-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .upload-area strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .upload-area span {
+            color: #777;
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 13px 22px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .primary-button {
+            background: #222;
+            color: white;
+        }
+
+        .primary-button:hover {
+            background: #000;
+        }
+
+        .secondary-button {
+            background: #e9edf1;
+            color: #222;
+        }
+
+        .secondary-button:hover {
+            background: #dfe4e8;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px;
+            color: #444;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: 1px solid #d5d9dd;
+            border-radius: 7px;
+            padding: 11px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+        }
+
+        textarea {
+            min-height: 75px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        .message-box {
+            width: 100%;
+            min-height: 430px;
+            background: #f8f9fa;
+            border: 1px solid #d9dde1;
+            border-radius: 10px;
+            padding: 18px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 700px) {
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            .container {
+                padding: 25px 14px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>PI Message Generator</h1>
+        <p>Upload a Proforma Invoice and generate a ready-to-copy supply chain message.</p>
+    </div>
+
+
+    <!-- UPLOAD SECTION -->
+    <div class="card">
+
+        <h2>1. Upload Proforma Invoice</h2>
+
+        <label for="fileInput" class="upload-area">
+
+            <div class="upload-icon">📄</div>
+
+            <strong>Drop your PDF or DOCX here</strong>
+
+            <span>or click to browse files</span>
+
+        </label>
+
+        <input
+            type="file"
+            id="fileInput"
+            accept=".pdf,.docx"
+        >
+
+        <div id="fileName" class="file-name">
+            No file selected
+        </div>
+
+        <div class="button-row">
+
+            <button
+                class="primary-button"
+                id="extractButton"
+                type="button"
+            >
+                Extract Invoice
+            </button>
+
+        </div>
+
+        <div id="status" class="status"></div>
+
+    </div>
+
+
+    <!-- EXTRACTED INFORMATION -->
+    <div class="card">
+
+        <h2>2. Review / Edit Information</h2>
+
+        <div class="field-grid">
+
+            <div class="field full">
+                <label>Bill To</label>
+                <input id="billTo" type="text">
+            </div>
+
+            <div class="field full">
+                <label>Bill To Address</label>
+                <textarea id="billAddress"></textarea>
+            </div>
+
+            <div class="field">
+                <label>Bill To Attn</label>
+                <input id="billAttn" type="text">
+            </div>
+
+            <div class="field">
+                <label>Bill To Email</label>
+                <input id="billEmail" type="text">
+            </div>
+
+            <div class="field">
+                <label>Bill To Telephone</label>
+                <input id="billTelephone" type="text">
+            </div>
+
+
+            <div class="field full">
+                <label>Ship To</label>
+                <input id="shipTo" type="text">
+            </div>
+
+            <div class="field full">
+                <label>Ship To Address</label>
+                <textarea id="shipAddress"></textarea>
+            </div>
+
+            <div class="field">
+                <label>Ship To Attn</label>
+                <input id="shipAttn" type="text">
+            </div>
+
+            <div class="field">
+                <label>Ship To Email</label>
+                <input id="shipEmail" type="text">
+            </div>
+
+            <div class="field">
+                <label>Ship To Telephone</label>
+                <input id="shipTelephone" type="text">
+            </div>
+
+
+            <div class="field full">
+                <label>Products</label>
+                <textarea
+                    id="products"
+                    placeholder="Product description x quantity @ unit price"
+                ></textarea>
+            </div>
+
+
+            <div class="field full">
+                <label>Terms</label>
+                <textarea id="terms"></textarea>
+            </div>
+
+            <div class="field full">
+                <label>Delivery</label>
+                <textarea id="delivery"></textarea>
+            </div>
+
+            <div class="field">
+                <label>Stock Location</label>
+                <input
+                    id="stockLocation"
+                    type="text"
+                    placeholder="Manually enter if not stated in PI"
+                >
+            </div>
+
+            <div class="field">
+                <label>PI Number</label>
+                <input id="piNumber" type="text">
+            </div>
+
+        </div>
+
+        <div class="button-row">
+
+            <button
+                class="primary-button"
+                id="generateButton"
+                type="button"
+            >
+                Generate Message
+            </button>
+
+            <button
+                class="secondary-button"
+                id="clearButton"
+                type="button"
+            >
+                Clear
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- GENERATED MESSAGE -->
+    <div class="card">
+
+        <h2>3. Ready-to-Copy Message</h2>
+
+        <div
+            id="messageBox"
+            class="message-box"
+        >
+Your generated message will appear here.
+        </div>
+
+        <div class="button-row">
+
+            <button
+                class="primary-button"
+                id="copyButton"
+                type="button"
+            >
+                Copy Message
+            </button>
+
+        </div>
+
+        <div id="copyStatus" class="status"></div>
+
+    </div>
+
+
+    <div class="footer">
+        PI Message Generator
+    </div>
+
+</div>
+
+
+<script>
+
+    /*
+     * Temporary interface functionality.
+     *
+     * The PDF/DOCX extraction engine will be added
+     * in the next step.
+     */
+
+
+    const fileInput = document.getElementById("fileInput");
+
+    const fileName = document.getElementById("fileName");
+
+    const extractButton = document.getElementById("extractButton");
+
+    const generateButton = document.getElementById("generateButton");
+
+    const clearButton = document.getElementById("clearButton");
+
+    const copyButton = document.getElementById("copyButton");
+
+    const messageBox = document.getElementById("messageBox");
+
+    const status = document.getElementById("status");
+
+    const copyStatus = document.getElementById("copyStatus");
+
+
+    fileInput.addEventListener("change", function () {
+
+        if (fileInput.files.length > 0) {
+
+            fileName.textContent =
+                "Selected file: " + fileInput.files[0].name;
+
+            status.textContent =
+                "File selected. Click Extract Invoice.";
+
+        } else {
+
+            fileName.textContent =
+                "No file selected";
+
+        }
+
+    });
+
+
+    extractButton.addEventListener("click", function () {
+
+        if (fileInput.files.length === 0) {
+
+            status.textContent =
+                "Please select a PDF or DOCX file first.";
+
+            return;
+
+        }
+
+        status.textContent =
+            "Extraction engine will be activated in the next step.";
+
+    });
+
+
+    generateButton.addEventListener("click", function () {
+
+        const billTo =
+            document.getElementById("billTo").value.trim();
+
+        const billAddress =
+            document.getElementById("billAddress").value.trim();
+
+        const billAttn =
+            document.getElementById("billAttn").value.trim();
+
+        const billEmail =
+            document.getElementById("billEmail").value.trim();
+
+        const billTelephone =
+            document.getElementById("billTelephone").value.trim();
+
+
+        const shipTo =
+            document.getElementById("shipTo").value.trim();
+
+        const shipAddress =
+            document.getElementById("shipAddress").value.trim();
+
+        const shipAttn =
+            document.getElementById("shipAttn").value.trim();
+
+        const shipEmail =
+            document.getElementById("shipEmail").value.trim();
+
+        const shipTelephone =
+            document.getElementById("shipTelephone").value.trim();
+
+
+        const products =
+            document.getElementById("products").value.trim();
+
+        const terms =
+            document.getElementById("terms").value.trim();
+
+        const delivery =
+            document.getElementById("delivery").value.trim();
+
+        const stockLocation =
+            document.getElementById("stockLocation").value.trim();
+
+        const piNumber =
+            document.getElementById("piNumber").value.trim();
+
+
+        const message =
+
+`Bill To: ${billTo}
+Address: ${billAddress}
+Attn: ${billAttn}
+Email: ${billEmail}
+Telephone: ${billTelephone}
+
+Ship To: ${shipTo}
+Address: ${shipAddress}
+Attn: ${shipAttn}
+Email: ${shipEmail}
+Telephone: ${shipTelephone}
+
+${products}
+
+Terms: ${terms}
+Delivery: ${delivery}
+
+Stock Location: ${stockLocation}
+PI make by incharge person. Thanks
+${piNumber}`;
+
+
+        messageBox.textContent = message;
+
+    });
+
+
+    clearButton.addEventListener("click", function () {
+
+        document
+            .querySelectorAll("input, textarea")
+            .forEach(function (element) {
+                element.value = "";
+            });
+
+        fileInput.value = "";
+
+        fileName.textContent =
+            "No file selected";
+
+        messageBox.textContent =
+            "Your generated message will appear here.";
+
+        status.textContent = "";
+
+        copyStatus.textContent = "";
+
+    });
+
+
+    copyButton.addEventListener("click", async function () {
+
+        const message =
+            messageBox.textContent.trim();
+
+        if (
+            !message ||
+            message === "Your generated message will appear here."
+        ) {
+
+            copyStatus.textContent =
+                "There is no message to copy yet.";
+
+            return;
+
+        }
+
+        try {
+
+            await navigator.clipboard.writeText(message);
+
+            copyStatus.textContent =
+                "Message copied successfully!";
+
+        } catch (error) {
+
+            copyStatus.textContent =
+                "Unable to copy automatically. Please select and copy the message manually.";
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
